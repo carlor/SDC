@@ -104,21 +104,6 @@ mixin template LLVMIntComparison(LLVMIntPredicate ComparisonType, string Compari
 
 class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
 {
-    this(Module mod, Location loc)
-    { 
-        super(mod, loc);
-        mType = new B(mod);
-        if (mGlobal) {
-            mValue = LLVMAddGlobal(mod.mod, mType.llvmType, "tlsint");
-            //TLS not implemented on Windows
-            version(Windows){} else {
-                LLVMSetThreadLocal(mValue, true);
-            }
-        } else {
-            mValue = LLVMBuildAlloca(mod.builder, mType.llvmType, "int");
-        }
-    }
-    
     this(Module mod, Location loc, T n)
     {
         this(mod, loc);
@@ -163,19 +148,14 @@ class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
     
     override LLVMValueRef get()
     {
-        return LLVMBuildLoad(mModule.builder, mValue, "primitive");
-    }
-    
-    // TODO: merge with get()?
-    override LLVMValueRef getConstant()
-    {
-        if (!isKnown) {
-            return super.getConstant();
-        } else {
+        if (isKnown) {
             return LLVMConstInt(mType.llvmType, mixin(C), !SIGNED);
+        } else {
+            return mValue;
         }
     }
     
+    /+
     override void set(Location location, Value val)
     {
         errorIfNotLValue(location);
@@ -222,20 +202,19 @@ class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
         } else {
             LLVMSetInitializer(mValue, val);
         }
-    }
+    }+/
     
     override Value add(Location location, Value val)
     {
-        auto result = LLVMBuildAdd(mModule.builder, this.get(), val.get(), "add");
-        auto v = new typeof(this)(mModule, location);
-        v.initialise(location, result);
-        v.isKnown = this.isKnown && val.isKnown;
-        if (v.isKnown) {
-            mixin("v." ~ C ~ " = cast(" ~ T.stringof ~ ")(" ~ C ~ " + val." ~ C ~ ");");
+        if (this.isKnown && val.isKnown) {    
+            return new typeof(this)(mModule, cast(T)(mixin(C ~ " + val." ~ C)));
+        } else {
+            auto result = LLVMBuildAdd(mModule.builder, this.get(), val.get(), "add");
+            return new typeof(this)(mModule, location, result);
         }
-        return v;
     }
     
+    /+
     static if(!is(T == bool)) override Value inc(Location location)
     {
         auto v = new typeof(this)(mModule, location);
@@ -353,13 +332,14 @@ class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
         auto v = new typeof(this)(mModule, location);
         v.initialise(location, result);
         return v;
-    }
+    }+/
     
     override Value getSizeof(Location location)
     {
         return newSizeT(mModule, location, T.sizeof);
     }
     
+    /+
     mixin LLVMIntComparison!(LLVMIntPredicate.EQ, "eq", "==");
     mixin LLVMIntComparison!(LLVMIntPredicate.NE, "neq", "!=");
     static if (SIGNED) {
@@ -371,7 +351,7 @@ class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
         mixin LLVMIntComparison!(LLVMIntPredicate.ULT, "lt", "<");
         mixin LLVMIntComparison!(LLVMIntPredicate.ULE, "lte", "<=");
     }
-    
+    +/
     
     override Value getInit(Location location)
     {
@@ -382,8 +362,6 @@ class PrimitiveIntegerValue(T, B, alias C, bool SIGNED) : Value
         
     protected void constInit(T n)
     {
-        auto val = LLVMConstInt(mType.llvmType(), n, !SIGNED);
-        initialise(location, val);
         isKnown = true;
         mixin(C ~ " = n;");
     }
@@ -407,6 +385,7 @@ alias PrimitiveIntegerValue!(char, CharType, "knownChar", false) CharValue;
 alias PrimitiveIntegerValue!(wchar, WcharType, "knownWchar", false) WcharValue;
 alias PrimitiveIntegerValue!(dchar, DcharType, "knownDchar", false) DcharValue;
 
+/+
 class FloatingPointValue(T, B) : Value
 {
     this(Module mod, Location location)
@@ -588,6 +567,7 @@ class FloatingPointValue(T, B) : Value
 alias FloatingPointValue!(float, FloatType) FloatValue;
 alias FloatingPointValue!(double, DoubleType) DoubleValue;
 alias FloatingPointValue!(real, RealType) RealValue;
++/
 
 class StaticArrayValue : Value
 {

@@ -26,6 +26,7 @@ import sdc.gen.cfg;
 import sdc.gen.sdcmodule;
 import sdc.gen.value.type;
 import sdc.gen.value.base;
+import sdc.gen.value.variable;
 import sdc.gen.statement;
 import sdc.gen.expression;
 import sdc.gen.sdcfunction;
@@ -254,36 +255,31 @@ void genVariableDeclaration(ast.VariableDeclaration decl, Module mod)
     }
      
     foreach (declarator; decl.declarators) {          
-        Value var;
+        Variable var;
         if (type.dtype == DType.Inferred) {
             if (declarator.initialiser is null || declarator.initialiser.type == ast.InitialiserType.Void) {
                 throw new CompilerError(decl.location, "not enough information to infer type.");
             }
-        } else {
-            var = type.getValue(mod, declarator.location);
         }
         
         if (declarator.initialiser is null) {
-            var.initialise(decl.location, var.getInit(decl.location));
+            var = new AutoVariable(declarator.location, type, mod);
+            var.initialise(type.getInit(decl.location));
         } else {
             if (declarator.initialiser.type == ast.InitialiserType.Void) {
-                var.initialise(decl.location, LLVMGetUndef(type.llvmType));
+                var.undefinedInit();
             } else if (declarator.initialiser.type == ast.InitialiserType.AssignExpression) {
                 auto aexp = genConditionalExpression(cast(ast.ConditionalExpression) declarator.initialiser.node, mod);
                 if (type.dtype == DType.Inferred) {
                     type = aexp.type;
                     var = type.getValue(mod, decl.location);
                 }
-                aexp = implicitCast(declarator.initialiser.location, aexp, type);
-                if (var is null) {
-                    throw new CompilerPanic(decl.location, "inferred type ended up with no value at declaration point.");
-                }
-                var.initialise(decl.location, aexp);
+                var = new AutoVariable(declarator.location, type, mod);
+                var.initialise(aexp);
             } else {
                 throw new CompilerPanic(declarator.initialiser.location, "unhandled initialiser type.");
             }
         }
-        var.lvalue = true;
         mod.currentScope.add(extractIdentifier(declarator.name), new Store(var));
     }
     

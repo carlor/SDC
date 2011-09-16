@@ -26,6 +26,7 @@ import sdc.extract;
 import sdc.gen.base;
 import sdc.gen.value.type;
 import sdc.gen.value.base;
+import sdc.gen.value.variable;
 import sdc.gen.sdcfunction;
 import sdc.gen.cfg;
 import sdc.gen.loop;
@@ -466,7 +467,7 @@ struct LookupFailure
 
 enum StoreType
 {
-    Value,
+    Variable,
     Type,
     Scope,
     Template,
@@ -481,11 +482,11 @@ class Store
     Function[] functions;
     Scope parentScope;
     
-    this(Value value)
+    this(Variable variable)
     {
-        storeType = StoreType.Value;
-        object = value;
-        location = value.location;
+        storeType = StoreType.Variable;
+        object = variable;
+        location = variable.location;
     }
     
     this(Type type, Location location)
@@ -522,12 +523,12 @@ class Store
         this.functions ~= functions;
     }
     
-    Value value() @property
+    Variable variable() @property
     {
-        assert(storeType == StoreType.Value);
-        auto val = cast(Value) object;
-        assert(val);
-        return val;
+        assert(storeType == StoreType.Variable);
+        auto var = cast(Variable) object;
+        assert(var);
+        return var;
     }
     
     Type type() @property
