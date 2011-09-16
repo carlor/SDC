@@ -20,7 +20,7 @@ import sdc.location;
 import sdc.extract;
 import ast = sdc.ast.all;
 import sdc.gen.sdcmodule;
-import sdc.gen.value;
+import sdc.gen.value.base;
 import sdc.gen.sdcfunction;
 
 
