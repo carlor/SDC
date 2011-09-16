@@ -58,61 +58,6 @@ enum DType
     Function,
 }
 
-version (none) Type dtypeToType(DType dtype, Module mod)
-{
-    final switch (dtype) with (DType) {
-    case None:
-        break;
-    case Void:
-        return new VoidType(mod);
-    case Bool:
-        return new BoolType(mod);
-    case Char:
-        return new CharType(mod);
-    case Ubyte:
-        return new UbyteType(mod);
-    case Byte:
-        return new ByteType(mod);
-    case Wchar:
-        return new WcharType(mod);
-    case Ushort:
-        return new UshortType(mod);
-    case Short:
-        return new ShortType(mod);
-    case Dchar:
-        return new DcharType(mod);
-    case Uint:
-        return new UintType(mod);
-    case Int:
-        return new IntType(mod);
-    case Ulong:
-        return new UlongType(mod);
-    case Long:
-        return new LongType(mod); 
-    case Float:
-        return new FloatType(mod);
-    case Double:
-        return new DoubleType(mod);
-    case Real:
-        return new RealType(mod);
-    case NullPointer:
-    case Pointer:
-    case Array:
-    case Complex:
-    case Struct:
-    case Enum:
-    case Class:
-    case Const:
-    case Immutable:
-    case Scope:
-    case Function:
-        break;
-    case Inferred:
-        return new InferredType(mod);
-    }
-    throw new CompilerPanic("tried to get Type out of invalid DType '" ~ to!string(dtype) ~ "'");
-}
-
 pure bool isComplexDType(DType dtype)
 {
     return dtype >= DType.Complex;
