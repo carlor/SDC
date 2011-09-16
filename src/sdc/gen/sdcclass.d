@@ -18,7 +18,7 @@ import ast = sdc.ast.all;
 import sdc.gen.base;
 import sdc.gen.sdcmodule;
 import sdc.gen.sdcfunction;
-import sdc.gen.type;
+import sdc.gen.value.type;
 import sdc.gen.value.base;
 
 

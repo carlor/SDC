@@ -17,7 +17,7 @@ import sdc.location;
 import sdc.ast.attribute;
 import sdc.gen.sdcfunction;
 import sdc.gen.sdcmodule;
-import sdc.gen.type;
+import sdc.gen.value.type;
 
 
 void bindC(Module mod, string filename)

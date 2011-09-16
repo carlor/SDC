@@ -25,7 +25,7 @@ import sdc.ast.attribute;
 import sdc.ast.declaration : FunctionDeclaration;
 import sdc.ast.statement;
 import sdc.gen.cfg;
-import sdc.gen.type;
+import sdc.gen.value.type;
 import sdc.gen.value.base;
 import sdc.gen.sdcmodule;
 

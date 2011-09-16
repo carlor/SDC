@@ -24,7 +24,7 @@ import sdc.aglobal;
 import sdc.location;
 import sdc.extract;
 import sdc.gen.base;
-import sdc.gen.type;
+import sdc.gen.value.type;
 import sdc.gen.value.base;
 import sdc.gen.sdcfunction;
 import sdc.gen.cfg;

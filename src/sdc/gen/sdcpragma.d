@@ -12,7 +12,7 @@ import sdc.compilererror;
 import ast=sdc.ast.all;
 import sdc.gen.expression;
 import sdc.gen.sdcmodule;
-import sdc.gen.type;
+import sdc.gen.value.type;
 
 
 void genPragma(ast.Pragma thePragma, Module mod)

@@ -4,7 +4,7 @@
  * This file is part of SDC. SDC is licensed under the GPL.
  * See LICENCE or sdc.d for more details.
  */
-module sdc.gen.type;
+module sdc.gen.value.type;
 
 import std.algorithm;
 import std.conv;
@@ -190,8 +190,8 @@ abstract class Type
         return dtype == other.dtype;
     }
     
-    package   Module mModule;
-    protected LLVMTypeRef mType;
+    Module mModule;
+    LLVMTypeRef mType;
 }
 
 class ScopeType : Type

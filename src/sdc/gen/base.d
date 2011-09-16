@@ -21,7 +21,7 @@ import sdc.gen.sdcimport;
 import sdc.gen.sdcclass;
 import sdc.gen.declaration;
 import sdc.gen.expression;
-import sdc.gen.type;
+import sdc.gen.value.type;
 import sdc.gen.aggregate;
 import sdc.gen.attribute;
 import sdc.gen.enumeration;

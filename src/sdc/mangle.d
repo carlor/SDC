@@ -13,7 +13,7 @@ import sdc.util;
 import sdc.compilererror;
 import sdc.extract;
 import sdc.gen.sdcmodule;
-import sdc.gen.type;
+import sdc.gen.value.type;
 import sdc.gen.value.base;
 import sdc.gen.sdcfunction;
 import sdc.ast.attribute;
