@@ -5,6 +5,7 @@ SOURCE = \
 	src/sdc/ast/*.d \
 	src/sdc/parser/*.d \
 	src/sdc/gen/*.d \
+	src/sdc/gen/value/*.d \
 	src/sdc/java/*.d
 
 OBJ = bin\sdc.obj
