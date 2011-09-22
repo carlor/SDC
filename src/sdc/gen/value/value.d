@@ -4,7 +4,7 @@
  * This file is part of SDC. SDC is licensed under the GPL.
  * See LICENCE or sdc.d for more details.
  */
-module sdc.gen.value.value;
+module sdc.gen.value.ivalue;
 
 import std.string;
 
@@ -13,7 +13,7 @@ import llvm.c.Core;
 import sdc.compilererror;
 import sdc.location;
 import sdc.gen.sdcmodule;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.gen.value.type;
 import ast = sdc.ast.all;
 

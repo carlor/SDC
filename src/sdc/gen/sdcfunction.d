@@ -26,7 +26,7 @@ import sdc.ast.declaration : FunctionDeclaration;
 import sdc.ast.statement;
 import sdc.gen.cfg;
 import sdc.gen.value.type;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.gen.sdcmodule;
 
 
@@ -87,7 +87,7 @@ class FunctionType : Type
         }
     }
     
-    override Value getValue(Module mod, Location location)
+    override Value getInstance(Module mod, Location location)
     {
         throw new CompilerPanic(location, "attempted to getValue of a FunctionType.");
     }

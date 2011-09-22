@@ -19,7 +19,7 @@ import sdc.gen.base;
 import sdc.gen.sdcmodule;
 import sdc.gen.sdcfunction;
 import sdc.gen.value.type;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 
 
 bool canGenClassDeclaration(ast.ClassDeclaration decl, Module mod)

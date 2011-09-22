@@ -27,7 +27,7 @@ import sdc.gen.sdcmodule;
 import sdc.gen.sdctemplate;
 import sdc.gen.sdcfunction;
 import sdc.gen.value.type;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.parser.expression;
 
 

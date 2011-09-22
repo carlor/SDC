@@ -15,7 +15,7 @@ import sdc.gen.statement;
 import sdc.gen.expression;
 import sdc.gen.sdcmodule;
 import sdc.gen.value.type;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.gen.loop; // For BreakTarget.
 
 struct SwitchCase

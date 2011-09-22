@@ -5,6 +5,9 @@
  * See LICENCE or sdc.d for more details.
  */
 module sdc.gen.value.base;
+public import sdc.gen.value.value;
+version (none):
+/+
 
 import std.algorithm;
 import std.conv;
@@ -1953,3 +1956,4 @@ class Known(T) if (is(T : Value)) : T
         }
     }
 }
++/

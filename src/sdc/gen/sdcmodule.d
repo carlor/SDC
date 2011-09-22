@@ -25,7 +25,7 @@ import sdc.location;
 import sdc.extract;
 import sdc.gen.base;
 import sdc.gen.value.type;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.gen.sdcfunction;
 import sdc.gen.cfg;
 import sdc.gen.loop;
@@ -53,6 +53,8 @@ class Module
     ast.Access currentAccess = ast.Access.Public;
     Value[]* functionPointerArguments;
     Switch* currentSwitch;
+    
+    bool generateCode = true;
 
     //ReturnTypeHolder[] returnTypes;
     

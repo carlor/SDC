@@ -14,7 +14,7 @@ import sdc.compilererror;
 import sdc.extract;
 import sdc.gen.base;
 import sdc.gen.sdcmodule;
-import sdc.gen.value.base;
+import sdc.gen.value.value;
 import sdc.gen.value.type;
 import ast = sdc.ast.all;
 
