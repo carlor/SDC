@@ -53,8 +53,6 @@ class Module
     ast.Access currentAccess = ast.Access.Public;
     Value[]* functionPointerArguments;
     Switch* currentSwitch;
-    
-    bool generateCode = true;
 
     //ReturnTypeHolder[] returnTypes;
     

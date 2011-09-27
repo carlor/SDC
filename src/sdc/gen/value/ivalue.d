@@ -2,6 +2,7 @@ module sdc.gen.value.value;
 
 import std.string;
 
+import sdc.aglobal;
 import sdc.compilererror;
 import sdc.location;
 import sdc.gen.sdcmodule;
@@ -79,7 +80,6 @@ abstract class Value
     abstract Value index(Location loc, Value val); /// [n]
     abstract Value slice(Location loc, Value from, Value to); /// [n .. m]  
     abstract Value modulus(Location loc, Value val); /// %
-    abstract Value getSizeof(Location loc); /// .sizeof
     abstract Value addressOf(Location loc); /// &v
     abstract Value call(Location loc, Location[] argLocations, Value[] args); /// v()
     
@@ -106,6 +106,7 @@ abstract class Value
         return a.not(location);
     }
     
+    abstract void buildCast(Location loc, Value from);
     abstract void buildInc(Location loc, Value val);
     abstract void buildDec(Location loc, Value val);
     abstract void buildAdd(Location loc, Value lhs, Value rhs);
@@ -121,13 +122,22 @@ abstract class Value
     abstract void buildGte(Location loc, Value lhs, Value rhs);
     abstract void buildLt (Location loc, Value lhs, Value rhs);
     abstract void buildLte(Location loc, Value lhs, Value rhs);
-    abstract void buildOr (Location loc, Value lhs, Value rhs);
-    abstract void buildAnd(Location loc, Value lhs, Value rhs);
-    abstract void buildXor(Location loc, Value lhs, Value rhs);
     abstract void buildModulus(Location loc, Value lhs, Value rhs);
     abstract void buildNot(Location loc, Value val);
     abstract void buildDereference(Location loc, Value val);
     abstract void buildAddressOf(Location loc, Value val);
+    abstract void buildIndex(Location loc, Value indexee, Value index);
+    
+    /// For backend purposes. HACK
+    package void* get()
+    {
+        return null;
+    }
+
+    /// ditto
+    package void set(void*)
+    {
+    }
 }
 
 /**
@@ -173,6 +183,27 @@ class StubValue : Value
     override Value slice(Location loc, Value from, Value to) { fail(loc, "slice"); assert(false); }
     override Value modulus(Location loc, Value val) { fail(loc, "modulo"); assert(false); }
     override Value call(Location loc, Location[] argLocations, Value[] args) { fail(loc, "call"); assert(false); }
+    override void buildCast(Location loc, Value from) { fail(loc, "buildCast"); assert(false); }
+    override void buildInc(Location loc, Value val) { fail(loc, "buildInc"); assert(false); }
+    override void buildDec(Location loc, Value val) { fail(loc, "buildDec"); assert(false); }
+    override void buildAdd(Location loc, Value lhs, Value rhs) { fail(loc, "buildAdd"); assert(false); }
+    override void buildSub(Location loc, Value lhs, Value rhs) { fail(loc, "buildSub"); assert(false); }
+    override void buildMul(Location loc, Value lhs, Value rhs) { fail(loc, "buildMul"); assert(false); }
+    override void buildDiv(Location loc, Value lhs, Value rhs) { fail(loc, "buildDiv"); assert(false); }
+    override void buildOr(Location loc, Value lhs, Value rhs) { fail(loc, "buildOr"); assert(false); }
+    override void buildXor(Location loc, Value lhs, Value rhs) { fail(loc, "buildXor"); assert(false); }
+    override void buildAnd(Location loc, Value lhs, Value rhs) { fail(loc, "buildAnd"); assert(false); }
+    override void buildEq(Location loc, Value lhs, Value rhs) { fail(loc, "buildEq"); assert(false); }
+    override void buildNeq(Location loc, Value lhs, Value rhs) { fail(loc, "buildNeq"); assert(false); }
+    override void buildGt(Location loc, Value lhs, Value rhs) { fail(loc, "buildGt"); assert(false); }
+    override void buildGte(Location loc, Value lhs, Value rhs) { fail(loc, "buildGte"); assert(false); }
+    override void buildLt(Location loc, Value lhs, Value rhs) { fail(loc, "buildLt"); assert(false); }
+    override void buildLte(Location loc, Value lhs, Value rhs) { fail(loc, "buildLte"); assert(false); }
+    override void buildModulus(Location loc, Value lhs, Value rhs) { fail(loc, "buildModulus"); assert(false); }
+    override void buildNot(Location loc, Value val) { fail(loc, "buildNot"); assert(false); }
+    override void buildDereference(Location loc, Value val) { fail(loc, "buildDereference"); assert(false); }
+    override void buildAddressOf(Location loc, Value val) { fail(loc, "buildAddressOf"); assert(false); }
+    override void buildIndex(Location loc, Value a, Value b) { fail(loc, "buildIndex"); assert(false); }
 }
 
 class VoidValue : StubValue
@@ -231,27 +262,8 @@ class PrimitiveIntValue(DPRIMITIVE, SDCTYPE : Type, string KNOWN) : StubValue
         `            throw new CompilerPanic(loc, "tried to " ~ NAME ~ " two different types.");`
         "        }"
         "        result." ~ KNOWN ~ " = this." ~ KNOWN ~ OP ~ "val." ~ KNOWN ~ ";"
-        "    }"
-        "    if (mod.generateCode) {"
+        "    } else {"
         "        result." ~ BUILDNAME ~ "(loc, this, val);"
-        "    }"
-        "    return result;"
-        "}"
-        );        
-    }
-    
-    mixin template UnaryOperation(string OP, string NAME, string BUILDNAME)
-    {
-        mixin(
-        "override Value " ~ NAME ~ "(Location loc)"
-        "{"
-        "    auto result = typeof(this).create(mod, loc);"
-        "    if (this.isKnown && val.isKnown) {"
-        "        result.isKnown = true;"
-        "        result." ~ KNOWN ~ " = " ~ OP ~ KNOWN ~ ";"
-        "    }"
-        "    if (mod.generateCode) {"
-        "        result." ~ BUILDNAME ~ "(loc, this);"
         "    }"
         "    return result;"
         "}"
@@ -274,8 +286,7 @@ class PrimitiveIntValue(DPRIMITIVE, SDCTYPE : Type, string KNOWN) : StubValue
         "    if (this.isKnown) {"
         "        result.isKnown = true;"
         "        result." ~ KNOWN ~ " = this." ~ KNOWN ~ OP ~ "1;"
-        "    }"
-        "    if (mod.generateCode) {"
+        "    } else {"
         "        result." ~ BUILDNAME ~ "(loc, this);"
         "    }"
         "    return result;"
@@ -299,20 +310,18 @@ class PrimitiveIntValue(DPRIMITIVE, SDCTYPE : Type, string KNOWN) : StubValue
     mixin BinaryOperation!("|",  "or", "buildOr");
     mixin BinaryOperation!("&", "and", "buildAnd");
     mixin BinaryOperation!("^", "xor", "buildXor");
-    mixin BinaryOperation!("%", "modulus", "buildModulu");
-    mixin UnaryOperation! ("~", "not", "buildNot");
+    mixin BinaryOperation!("%", "modulus", "buildModulus");
     mixin IncrementOperation!"+";
     mixin IncrementOperation!"-";
     
-    override Value dereference(Location loc)
+    override Value not(Location loc)
     {
-        auto result = type.getBase().getInstance(mod, loc);
+        auto result = typeof(this).create(mod, loc);
+        result.isKnown = this.isKnown;
         if (this.isKnown) {
-            result.isKnown = true;
-            mixin("result." ~ KNOWN ~ " = this.knownPointer." ~ KNOWN ~ ";");
-        }
-        if (mod.generateCode) {
-            result.buildDereference(loc, this);
+            mixin("result." ~ KNOWN ~ " = ~this." ~ KNOWN ~ ";");
+        } else {
+            result.buildNot(loc, this);
         }
         return result;
     }
@@ -320,15 +329,38 @@ class PrimitiveIntValue(DPRIMITIVE, SDCTYPE : Type, string KNOWN) : StubValue
     override Value addressOf(Location loc)
     {
         auto result = PointerType.create(mod, type).getInstance(mod, loc);
+        result.isKnown = this.isKnown;
         if (this.isKnown) {
-            result.isKnown = true;
             result.knownPointer = this;
-        }
-        if (mod.generateCode) {
+        } else {
             result.buildAddressOf(loc, this);
+        }
+        return result;
+    }
+    
+    override Value performCast(Location loc, Type to)
+    {
+        auto result = to.getInstance(mod, loc);
+        result.isKnown = this.isKnown;
+        if (result.isKnown) {
+            mixin("result." ~ KNOWN ~ " = this." ~ KNOWN ~ ";");
+        } else {
+            result.buildCast(loc, this);
         }
         return result;
     }
 }
 
+alias PrimitiveIntValue!(bool, BoolType, "knownBool") BoolValue;
+alias PrimitiveIntValue!(byte, ByteType, "knownByte") ByteValue;
+alias PrimitiveIntValue!(ubyte, UbyteType, "knownUbyte") UbyteValue;
+alias PrimitiveIntValue!(short, ShortType, "knownShort") ShortValue;
+alias PrimitiveIntValue!(ushort, UshortType, "knownUshort") UshortValue;
 alias PrimitiveIntValue!(int, IntType, "knownInt") IntValue;
+alias PrimitiveIntValue!(uint, UintType, "knownUint") UintValue;
+alias PrimitiveIntValue!(long, LongType, "knownLong") LongValue;
+alias PrimitiveIntValue!(ulong, UlongType, "knownUlong") UlongValue;
+alias PrimitiveIntValue!(char, CharType, "knownChar") CharValue;
+alias PrimitiveIntValue!(wchar, WcharType, "knownWchar") WcharValue;
+alias PrimitiveIntValue!(dchar, DcharType, "knownDchar") DcharValue;
+

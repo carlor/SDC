@@ -65,6 +65,12 @@ abstract class Type
     abstract Value getInstance(Module, Location);
     abstract void addMember(string name, Type);
     abstract string name();
+
+    /// For backend purposes.
+    void* get() { return null; }
+
+    /// ditto
+    void set(void*) {}
 }
 
 abstract class VoidType : Type
