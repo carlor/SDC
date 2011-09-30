@@ -47,6 +47,11 @@ class IntValue : value.IntValue
         }
         return llvmValue;            
     }
+
+    override void set(void* p)
+    {
+        llvmValue = p;
+    }
     
     override void buildAdd(Location loc, Value lhs, Value rhs)
     {
