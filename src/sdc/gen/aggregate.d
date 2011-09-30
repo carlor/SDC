@@ -46,11 +46,11 @@ void genAggregateDeclaration(ast.AggregateDeclaration decl, ast.DeclarationDefin
     }
     
     auto name = extractIdentifier(decl.name);
-    verbosePrint("Generating aggregate '" ~ name ~"'.", VerbosePrintColour.Red);
+    verbosePrint("Generating aggregate '" ~ name ~ "'.", VerbosePrintColour.Red);
     verboseIndent++;
 
 
-    auto type = new StructType(mod);
+    auto type = StructType.create(mod);
     type.fullName = mod.name.dup;
     type.fullName.identifiers ~= decl.name;
     
@@ -65,9 +65,9 @@ void genAggregateDeclaration(ast.AggregateDeclaration decl, ast.DeclarationDefin
     Function[] functions;
     foreach (name, store; mod.currentScope.mSymbolTable) {
         if (store.storeType == StoreType.Type) {
-            type.addMemberType(name, store.type);
+            type.addMemberType(store.location, name, store.type);
         } else if (store.storeType == StoreType.Value) {
-            type.addMemberVar(name, store.value.type);
+            type.addMember(store.location, name, store.value.type);
         } else if (store.storeType == StoreType.Function) {
             functions ~= store.getFunctions();  
         } else {
@@ -79,8 +79,8 @@ void genAggregateDeclaration(ast.AggregateDeclaration decl, ast.DeclarationDefin
     type.declare();
     foreach (fn; functions) {
         fn.type.parentAggregate = type;
-        fn.addParameter(new PointerType(mod, type), "this");
-        type.addMemberFunction(fn.simpleName, fn);
+        fn.addParameter(PointerType.create(mod, type), "this");
+        type.addMemberFunction(fn.location, fn.simpleName, fn);
     }
     
     mod.currentScope.redefine(name, new Store(type, decl.name.location));

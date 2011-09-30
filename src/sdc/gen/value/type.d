@@ -4,6 +4,7 @@ import std.string;
 
 import sdc.extract;
 import sdc.location;
+import sdc.gen.sdcfunction;
 import sdc.gen.sdcmodule;
 import sdc.gen.value.value;
 import ast = sdc.ast.all;
@@ -48,6 +49,7 @@ class Type
 {
     Module mod;
     DType dtype;
+    Scope typeScope;
     
     this(Module mod, DType dtype)
     {
@@ -66,6 +68,26 @@ class Type
     abstract void addMember(string name, Type);
     abstract string name();
     abstract ast.QualifiedName fullName();
+
+    void addMember(Location location, string name, Type t)
+    {
+        throw new CompilerPanic(location, "called addMember on unsupported type.");
+    }
+
+    void addMemberType(Location location, string name, Type t)
+    {
+        throw new CompilerPanic(location, "called addMemberType on unsupported type.");
+    }
+
+    void addMemberFunction(Location location, string name, Function fn)
+    {
+        throw new CompilerPanic(location, "called addMemberFunction on unsupported type.");
+    }
+
+    void declare()
+    {
+        throw new CompilerPanic("called declare on unsupported type.");
+    }
 
     Type importToModule(Module mod)
     {
