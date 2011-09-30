@@ -63,7 +63,7 @@ class FunctionType : Type
      * have to be removed and readded for changes to take effect,
      * however.
      */
-    void declare()
+    override void declare()
     {
         LLVMTypeRef[] params;
         foreach (ref t; parameterTypes) {
