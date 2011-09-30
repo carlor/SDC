@@ -289,9 +289,9 @@ void loadConfig(ref string[] args)
 Type getSizeT(Module mod)
 {
     if (bits == 32) {
-        return new UintType(mod);
+        return UintType.create(mod);
     } else if (bits == 64) {
-        return new UlongType(mod);
+        return UlongType.create(mod);
     } else {
         assert(false);
     }
@@ -300,21 +300,21 @@ Type getSizeT(Module mod)
 Type getPtrdiffT(Module mod)
 {
     if (bits == 32) {
-        return new IntType(mod);
+        return IntType.create(mod);
     } else if (bits == 64) {
-        return new LongType(mod);
+        return LongType.create(mod);
     } else {
         assert(false);
     }
 }
 
-// Urgh
+// Jakob sez 'Urgh!'
 Value newSizeT(Module mod, Location loc, ulong init)
 {
     if (bits == 32) {
-        return new UintValue(mod, loc, cast(uint)init);
+        return UintValue.create(mod, loc, cast(uint) init);
     } else if (bits == 64) {
-        return new UlongValue(mod, loc, init);
+        return UlongValue.create(mod, loc, init);
     } else {
         assert(false);
     }
@@ -323,9 +323,9 @@ Value newSizeT(Module mod, Location loc, ulong init)
 Value newPtrdiffT(Module mod, Location loc, long init)
 {
     if (bits == 32) {
-        return new IntValue(mod, loc, cast(int)init);
+        return IntValue.create(mod, loc, cast(int) init);
     } else if (bits == 64) {
-        return new LongValue(mod, loc, init);
+        return LongValue.create(mod, loc, init);
     } else {
         assert(false);
     }

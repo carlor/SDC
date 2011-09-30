@@ -82,6 +82,7 @@ abstract class Value
     abstract Value modulus(Location loc, Value val); /// %
     abstract Value addressOf(Location loc); /// &v
     abstract Value call(Location loc, Location[] argLocations, Value[] args); /// v()
+    abstract Value getMember(Location loc, string name);  /// v.name
     
     Value logicalOr(Location location, Value val)
     {
@@ -129,13 +130,13 @@ abstract class Value
     abstract void buildIndex(Location loc, Value indexee, Value index);
     
     /// For backend purposes. HACK
-    package void* get()
+    void* get()
     {
         return null;
     }
 
     /// ditto
-    package void set(void*)
+    void set(void*)
     {
     }
 }
@@ -183,6 +184,7 @@ class StubValue : Value
     override Value slice(Location loc, Value from, Value to) { fail(loc, "slice"); assert(false); }
     override Value modulus(Location loc, Value val) { fail(loc, "modulo"); assert(false); }
     override Value call(Location loc, Location[] argLocations, Value[] args) { fail(loc, "call"); assert(false); }
+    override Value getMember(Location, string) { fail(loc, "getMember"); assert(false); }
     override void buildCast(Location loc, Value from) { fail(loc, "buildCast"); assert(false); }
     override void buildInc(Location loc, Value val) { fail(loc, "buildInc"); assert(false); }
     override void buildDec(Location loc, Value val) { fail(loc, "buildDec"); assert(false); }
@@ -364,3 +366,30 @@ alias PrimitiveIntValue!(char, CharType, "knownChar") CharValue;
 alias PrimitiveIntValue!(wchar, WcharType, "knownWchar") WcharValue;
 alias PrimitiveIntValue!(dchar, DcharType, "knownDchar") DcharValue;
 
+class ScopeValue : StubValue
+{
+    Scope _scope;
+
+    this(Module mod, Location location, Scope _scope)
+    {
+        super(mod, location);
+        this._scope = _scope;
+    }
+
+    override Value getMember(Location loc, string member)
+    {
+        auto store = _scope.get(name);
+        if (store is null) {
+            return null;
+        }
+        if (store.storeType == StoreType.Scope) {
+            return new ScopeValue(mod, location, store.getScope());
+        } else if (store.storeType == StoreType.Value) {
+            return _scope.get(name).value;
+        } else if (store.storeType == StoreType.Function) {
+            return new Functions(mod, location, store.getFunctions());
+        } else {
+            assert(false, to!string(store.storeType));
+        }
+    }
+}

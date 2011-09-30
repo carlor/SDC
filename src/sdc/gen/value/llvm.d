@@ -6,13 +6,11 @@ import llvm.c.Core;
 
 import sdc.compilererror;
 import sdc.location;
-static import sdc.gen.value.value;
-static import sdc.gen.value.variable;
-alias sdc.gen.value.value value;
-alias sdc.gen.value.variable variable;
+import sdc.gen.value.value;
+import sdc.gen.value.variable;
 
 
-class Variable : variable.Variable
+class Variable : sdc.gen.value.variable.Variable
 {
     LLVMValueRef pointer;
     Value value;
@@ -32,7 +30,7 @@ class Variable : variable.Variable
     }
 }
 
-class IntValue : value.IntValue
+class IntValue : sdc.gen.value.value.IntValue
 {
     LLVMValueRef llvmValue;
     
