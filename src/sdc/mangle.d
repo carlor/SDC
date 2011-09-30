@@ -28,7 +28,7 @@ string mangleFunction(Function fn)
 {
     auto mangledName = startMangle();
     if (fn.type.parentAggregate !is null) {
-        mangleQualifiedName(mangledName, fn.type.parentAggregate.getFullName());
+        mangleQualifiedName(mangledName, fn.type.parentAggregate.fullName());
     } else {
         if (fn.type.mod.name is null) {
             throw new CompilerPanic("null module name.");
@@ -168,15 +168,15 @@ void mangleType(ref string mangledName, Type type)
         break;
     case Struct:
         mangledName ~= "S";
-        mangleQualifiedName(mangledName, type.getFullName());
+        mangleQualifiedName(mangledName, type.fullName());
         break;
     case Enum:
         mangledName ~= "E";
-        mangleQualifiedName(mangledName, type.getFullName());
+        mangleQualifiedName(mangledName, type.fullName());
         break;
     case Class:
         mangledName ~= "C";
-        mangleQualifiedName(mangledName, type.getFullName());
+        mangleQualifiedName(mangledName, type.fullName());
         break;
     case Const:
         mangledName ~= "x";

@@ -65,6 +65,7 @@ class Type
     abstract Value getInstance(Module, Location);
     abstract void addMember(string name, Type);
     abstract string name();
+    abstract ast.QualifiedName fullName();
 
     Type importToModule(Module mod)
     {
