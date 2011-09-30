@@ -88,8 +88,11 @@ void genClassDeclaration(ast.ClassDeclaration decl, Module mod)
     mod.aggregate = oldAggregate;
 }
 
-ClassValue newClass(Module mod, Location location, ClassType type, ast.ArgumentList argumentList)
+//ClassValue newClass(Module mod, Location location, ClassType type, ast.ArgumentList argumentList)
+Value newClass(Module, Location, Type, ast.ArgumentList)
 {
+    return null;
+    /+
     // Allocate the underlying class struct. 
     auto v = new ClassValue(mod, location, type);
     auto size = type.structType.getValue(mod, location).getSizeof(location);
@@ -113,4 +116,5 @@ ClassValue newClass(Module mod, Location location, ClassType type, ast.ArgumentL
     // TODO
     
     return v;
+    +/
 }
