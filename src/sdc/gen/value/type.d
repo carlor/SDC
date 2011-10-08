@@ -50,6 +50,9 @@ class Type
     Module mod;
     DType dtype;
     Scope typeScope;
+    size_t stillToGo;
+    bool isRef;
+    string[] aliasThises;
     
     this(Module mod, DType dtype)
     {
@@ -529,4 +532,24 @@ abstract class EnumType : Type
     override Type getBase() { return base; }
     
     override string name() { return "enum " ~ extractQualifiedName(fullName); }
+}
+
+abstract class FunctionType : Type
+{
+    static FunctionType create(Module mod, Type returnType, Type[] parameterTypes, bool varargs)
+    {
+        return null;
+    }
+
+    ast.Linkage linkage;
+    Type returnType;
+    Type[] parameterTypes;
+    Type parentAggregate;
+    bool isStatic;
+    bool varargs;
+}
+
+bool isString(Type t)
+{
+    return t.dtype == DType.Array && t.getBase().dtype == DType.Char;
 }

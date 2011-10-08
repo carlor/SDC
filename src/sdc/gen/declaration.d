@@ -24,12 +24,14 @@ import ast = sdc.ast.all;
 import sdc.gen.base;
 import sdc.gen.cfg;
 import sdc.gen.sdcmodule;
-import sdc.gen.value.type;
-import sdc.gen.value.value;
 import sdc.gen.statement;
 import sdc.gen.expression;
 import sdc.gen.sdcfunction;
 import sdc.gen.sdctemplate;
+import sdc.gen.value.type;
+import sdc.gen.value.value;
+import sdc.gen.value.casting;
+import sdc.gen.value.variable;
 import sdc.parser.declaration;
 import sdc.java.mangle;
 
@@ -153,7 +155,7 @@ void declareFunctionDeclaration(ast.FunctionDeclaration decl, ast.DeclarationDef
         names ~= param.identifier !is null ? extractIdentifier(param.identifier) : "";
     }
     
-    auto fntype = new FunctionType(mod, returnType, params, decl.parameterList.varargs);
+    auto fntype = FunctionType.create(mod, returnType, params, decl.parameterList.varargs);
     fntype.linkage = decl.linkage;
     fntype.isStatic = decl.searchAttributesBackwards(ast.AttributeType.Static);
     
@@ -186,7 +188,7 @@ void declareFunctionDeclaration(ast.FunctionDeclaration decl, ast.DeclarationDef
     decl.userData = fn;
     
     if (fn.simpleName == "main" && fn.type.linkage == ast.Linkage.D) {
-        fn.type.returnType = new IntType(mod);
+        fn.type.returnType = IntType.create(mod);
         fn.convertedFromVoidMain = true;
     }
     
@@ -246,7 +248,7 @@ void genVariableDeclaration(ast.VariableDeclaration decl, Module mod)
     
     auto type = astTypeToBackendType(decl.type, mod, OnFailure.DieWithError);
     if (type.dtype == DType.Pointer && type.getBase().dtype == DType.Function) {
-        Value getDefaultValue(Type t) { return t.getValue(mod, decl.location); }
+        Value getDefaultValue(Type t) { return t.getInstance(mod, decl.location); }
         
         auto asFunction = enforce(cast(FunctionType) type.getBase());
         args = array( map!getDefaultValue(asFunction.parameterTypes) );
@@ -254,36 +256,35 @@ void genVariableDeclaration(ast.VariableDeclaration decl, Module mod)
     }
      
     foreach (declarator; decl.declarators) {          
-        Value var;
+        Variable var;
         if (type.dtype == DType.Inferred) {
             if (declarator.initialiser is null || declarator.initialiser.type == ast.InitialiserType.Void) {
                 throw new CompilerError(decl.location, "not enough information to infer type.");
             }
         } else {
-            var = type.getValue(mod, declarator.location);
+            var = Variable.create(declarator.location, type.getInstance(mod, declarator.location));
         }
         
         if (declarator.initialiser is null) {
-            var.initialise(decl.location, var.getInit(decl.location));
+            var = Variable.create(decl.location, type.getInstance(mod, decl.location));
         } else {
             if (declarator.initialiser.type == ast.InitialiserType.Void) {
-                var.initialise(decl.location, LLVMGetUndef(type.llvmType));
+                var = Variable.createVoidInitialised(decl.location, type);
             } else if (declarator.initialiser.type == ast.InitialiserType.AssignExpression) {
                 auto aexp = genConditionalExpression(cast(ast.ConditionalExpression) declarator.initialiser.node, mod);
                 if (type.dtype == DType.Inferred) {
                     type = aexp.type;
-                    var = type.getValue(mod, decl.location);
+                    var = Variable.create(decl.location, type.getInstance(mod, decl.location));
                 }
                 aexp = implicitCast(declarator.initialiser.location, aexp, type);
                 if (var is null) {
                     throw new CompilerPanic(decl.location, "inferred type ended up with no value at declaration point.");
                 }
-                var.initialise(decl.location, aexp);
+                var.set(decl.location, aexp);
             } else {
                 throw new CompilerPanic(declarator.initialiser.location, "unhandled initialiser type.");
             }
         }
-        var.lvalue = true;
         mod.currentScope.add(extractIdentifier(declarator.name), new Store(var));
     }
     
@@ -325,18 +326,23 @@ void genFunctionBody(ast.FunctionBody functionBody, ast.FunctionDeclaration decl
     
     // Add parameters into the functions namespace.
     foreach (i, argType; fn.type.parameterTypes) {
+        Variable var;
         Value val;
         if (argType.isRef) {
-            auto dummy = argType.getValue(mod, decl.location);
+            throw new CompilerPanic(decl.location, "ref parameters are on holiday.");
+            // !!!
+            /*
+            auto dummy = argType.getInstance(mod, decl.location);
             auto r = new ReferenceValue(mod, decl.location, dummy);
             r.setReferencePointer(decl.location, LLVMGetParam(fn.llvmValue, cast(uint) i));
             val = r;  
+            */
         } else {
-            val = argType.getValue(mod, decl.location);
-            val.initialise(decl.location, LLVMGetParam(fn.llvmValue, cast(uint) i));
+            val = argType.getInstance(mod, decl.location);
+            val.set(LLVMGetParam(fn.llvmValue, cast(uint) i));
+            var.set(decl.location, val);
         }
-        val.lvalue = true;
-        mod.currentScope.add(fn.argumentNames[i], new Store(val));
+        mod.currentScope.add(fn.argumentNames[i], new Store(var));
     }
     fn.currentBasicBlock = LLVMGetLastBasicBlock(fn.llvmValue);
     assert(fn.currentBasicBlock !is null);
@@ -365,7 +371,9 @@ void genFunctionBody(ast.FunctionBody functionBody, ast.FunctionDeclaration decl
             }
         }
     } else if (!mod.currentFunction.cfgTail.isExitBlock) {
-        LLVMBuildRet(mod.builder, LLVMGetUndef(fn.type.returnType.llvmType));
+        auto rtype = cast(LLVMTypeRef) fn.type.returnType.get();
+        assert(rtype !is null);
+        LLVMBuildRet(mod.builder, LLVMGetUndef(rtype));
     }
     
     mod.currentFunction = null;

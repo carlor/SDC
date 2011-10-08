@@ -10,7 +10,7 @@ import sdc.gen.value.value;
 import sdc.gen.value.variable;
 
 
-class Variable : sdc.gen.value.variable.Variable
+class LLVMVariable : Variable
 {
     LLVMValueRef pointer;
     Value value;
@@ -30,7 +30,7 @@ class Variable : sdc.gen.value.variable.Variable
     }
 }
 
-class IntValue : sdc.gen.value.value.IntValue
+class LLVMIntValue : IntValue
 {
     LLVMValueRef llvmValue;
     

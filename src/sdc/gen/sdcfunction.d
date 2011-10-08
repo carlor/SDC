@@ -36,16 +36,8 @@ import sdc.gen.sdcmodule;
  * linkage (C, C++, D, etc) for calling convention
  * and mangling purposes.
  */
-class FunctionType : Type
+class LLVMFunctionType : FunctionType
 {
-    Linkage linkage;
-    Type returnType;
-    Type[] parameterTypes;
-    Type parentAggregate;
-    bool isStatic;
-    bool varargs;
-    Module mod;
-    
     this(Module mod, Type returnType, Type[] parameterTypes, bool varargs)
     {
         super(mod);
