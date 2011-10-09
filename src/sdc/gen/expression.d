@@ -76,17 +76,17 @@ Value genConditionalExpression(ast.ConditionalExpression expression, Module mod)
     auto a = genBinaryExpression(expression.binaryExpression, mod);
     if (expression.expression !is null) {
         auto e = genExpression(expression.expression, mod.dup);
-        auto v = e.type.getValue(mod, expression.location);
+        auto v = e.type.getInstance(mod, expression.location);
         
         auto condTrueBB  = LLVMAppendBasicBlockInContext(mod.context, mod.currentFunction.llvmValue, "condTrue");
         auto condFalseBB = LLVMAppendBasicBlockInContext(mod.context, mod.currentFunction.llvmValue, "condFalse");
         auto condEndBB   = LLVMAppendBasicBlockInContext(mod.context, mod.currentFunction.llvmValue, "condEnd");
-        LLVMBuildCondBr(mod.builder, a.performCast(expression.location, new BoolType(mod)).get(), condTrueBB, condFalseBB);
+        LLVMBuildCondBr(mod.builder, cast(LLVMValueRef) a.performCast(expression.location, BoolType.create(mod)).get(), condTrueBB, condFalseBB);
         LLVMPositionBuilderAtEnd(mod.builder, condTrueBB);
-        v.initialise(expression.location, genExpression(expression.expression, mod));
+        v = genExpression(expression.expression, mod);
         LLVMBuildBr(mod.builder, condEndBB);
         LLVMPositionBuilderAtEnd(mod.builder, condFalseBB);
-        v.initialise(expression.location, genConditionalExpression(expression.conditionalExpression, mod));
+        v = genConditionalExpression(expression.conditionalExpression, mod);
         LLVMBuildBr(mod.builder, condEndBB);
         LLVMPositionBuilderAtEnd(mod.builder, condEndBB);
         
