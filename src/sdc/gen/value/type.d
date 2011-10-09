@@ -69,6 +69,7 @@ class Type
     abstract Value getSizeof();
     abstract Value getInstance(Module, Location);
     abstract void addMember(string name, Type);
+    abstract void addMember(string name, Value);
     abstract string name();
     abstract ast.QualifiedName fullName();
 
@@ -547,6 +548,21 @@ abstract class FunctionType : Type
     Type parentAggregate;
     bool isStatic;
     bool varargs;
+}
+
+pure bool isComplexDType(DType dtype)
+{
+    return dtype >= DType.Complex;
+}
+
+pure bool isIntegerDType(DType dtype)
+{
+    return dtype >= DType.Bool && dtype <= DType.Long;
+}
+
+pure bool isFPDtype(DType dtype)
+{
+    return dtype >= DType.Float && dtype <= DType.Double;
 }
 
 bool isString(Type t)
