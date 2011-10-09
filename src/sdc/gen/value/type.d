@@ -518,7 +518,7 @@ abstract class EnumType : Type
     ast.QualifiedName fullName;
     Type base;
     
-    static EnumType create(Module mod, EnumType base)
+    static EnumType create(Module mod, Type base)
     {
         return null;
     }
