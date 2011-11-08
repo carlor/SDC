@@ -26,6 +26,7 @@ import sdc.gen.sdcclass;
 import sdc.gen.sdcmodule;
 import sdc.gen.sdctemplate;
 import sdc.gen.sdcfunction;
+import sdc.gen.value.casting;
 import sdc.gen.value.type;
 import sdc.gen.value.value;
 import sdc.parser.expression;
@@ -165,7 +166,7 @@ Value performOperation(Module mod, Location location, ast.BinaryOperation operat
     void integralPromotion(ref Value v)
     {
         if (isIntegerDType(v.type.dtype) && v.type.dtype < DType.Int) {
-            v = v.performCast(location, new IntType(mod));
+            v = v.performCast(location, IntType.create(mod));
         }
     }
     if (undergoesIntegralPromotion(operation)) {
@@ -185,7 +186,7 @@ Value performOperation(Module mod, Location location, ast.BinaryOperation operat
     case None:
         break;
     case Assign:
-        lhs.set(location, rhs);
+        lhs = rhs;
         break;
     case AddAssign:
         lhs.initialise(location, lhs.add(location, rhs));

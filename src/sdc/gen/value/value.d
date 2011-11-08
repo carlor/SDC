@@ -7,6 +7,7 @@ import sdc.compilererror;
 import sdc.location;
 import sdc.gen.sdcmodule;
 import sdc.gen.value.type;
+import sdc.gen.value.variable;
 import ast = sdc.ast.all;
 
 /**
@@ -105,6 +106,11 @@ abstract class Value
         auto boolType = BoolType.create(mod);
         auto a = this.performCast(location, boolType);
         return a.not(location);
+    }
+
+    Value set(Location location, Value value)
+    {
+        throw new CompilerPanic(location, "Value.set is to only be used on VariableValues.");
     }
     
     abstract void buildCast(Location loc, Value from);
@@ -392,4 +398,30 @@ class ScopeValue : StubValue
             assert(false, to!string(store.storeType));
         }
     }
+}
+
+/**
+ * Variable wrapper.
+ * See: sdc.gen.value.variable.Variable
+ */
+class VariableValue : StubValue
+{
+    Variable variable;
+    mixin template PassThrough(string SIGNATURE, string CALL)
+    {
+        mixin("override Value " ~ SIGNATURE ~ "{"
+              "    return variable.get(l)." ~ CALL ~ ";"
+              "}");
+    }
+
+    mixin PassThrough!("performCast(Location l, Type t)", "performCast(l, t)");
+    mixin PassThrough!("add(Location l, Value v)", "add(l, v)");
+    mixin PassThrough!("inc(Location l)", "inc(l)");
+    mixin PassThrough!("dec(Location l)", "dec(l)");
+    mixin PassThrough!("sub(Location l, Value v)", "sub(l, v)");
+    mixin PassThrough!("mul(Location l, Value v)", "mul(l, v)");
+    mixin PassThrough!("div(Location l, Value v)", "div(l, v)");
+    mixin PassThrough!("eq(Location l, Value v)", "eq(l, v)");
+    mixin PassThrough!("identity(Location l, Value v)", "identity(l, v)");
+    mixin PassThrough!("nidentity(Location l, Value v)", "nidentity(l, v)");
 }
